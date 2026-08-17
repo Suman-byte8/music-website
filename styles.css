@@ -1,0 +1,391 @@
+/* ===========================================================
+   The Local Train — Interactive Music Archive
+   Design tokens
+=========================================================== */
+:root {
+  --bg: #080808;
+  --fg: #f3f1eb;
+  --muted: rgba(243, 241, 235, 0.55);
+  --line: rgba(243, 241, 235, 0.18);
+  --transition-slow: 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-med: 450ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+}
+
+body {
+  cursor: default;
+}
+
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 1px solid var(--fg);
+  outline-offset: 3px;
+}
+
+/* ===========================================================
+   Loading screen
+=========================================================== */
+#loadingScreen {
+  transition: opacity var(--transition-slow);
+}
+#loadingScreen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.loading-bar {
+  width: 140px;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.loading-bar span {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--fg);
+  animation: loadingSweep 1.3s ease-in-out infinite;
+}
+@keyframes loadingSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+#app {
+  transition: opacity var(--transition-slow);
+}
+#app.visible {
+  opacity: 1;
+}
+
+/* ===========================================================
+   Background video layer
+=========================================================== */
+#videoLayer {
+  background: var(--bg);
+}
+.bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+  filter: saturate(0.82) brightness(0.72) contrast(1.05);
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+.bg-video.active {
+  opacity: 1;
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 8, 8, 0.55) 0%,
+    rgba(8, 8, 8, 0.35) 28%,
+    rgba(8, 8, 8, 0.45) 65%,
+    rgba(8, 8, 8, 0.72) 100%
+  );
+}
+
+.grain {
+  position: absolute;
+  inset: -100px;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation: grainShift 8s steps(8) infinite;
+  mix-blend-mode: overlay;
+}
+@keyframes grainShift {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1%, -2%); }
+  30% { transform: translate(2%, 1%); }
+  50% { transform: translate(-2%, 2%); }
+  70% { transform: translate(1%, -1%); }
+  90% { transform: translate(-1%, 2%); }
+}
+
+.cursor-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(243, 241, 235, 0.045) 0%, rgba(243, 241, 235, 0) 70%);
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  transition: opacity 300ms ease;
+  opacity: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cursor-glow.visible { opacity: 1; }
+}
+
+/* ===========================================================
+   Micro buttons / nav
+=========================================================== */
+.micro-btn {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color var(--transition-med);
+  white-space: nowrap;
+}
+.micro-btn:hover { color: var(--fg); }
+
+.playlist-nav-btn {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  transition: color var(--transition-med), transform var(--transition-med);
+}
+.playlist-nav-btn:hover { color: var(--fg); transform: translateX(2px); }
+.playlist-nav-btn.active-playlist { color: var(--fg); }
+.playlist-nav-btn.active-playlist::before { content: "— "; }
+
+.menu-list-btn {
+  border: 1px solid var(--line);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  transition: border-color var(--transition-med), background var(--transition-med), transform var(--transition-med);
+}
+.menu-list-btn:hover {
+  border-color: rgba(243, 241, 235, 0.4);
+  background: rgba(243, 241, 235, 0.03);
+  transform: translateY(-1px);
+}
+
+/* ===========================================================
+   Player controls
+=========================================================== */
+.progress-track {
+  width: 100%;
+  min-width: 220px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.progress-track::before {
+  content: "";
+  display: none;
+}
+.progress-track {
+  position: relative;
+}
+.progress-track::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: var(--line);
+  transform: translateY(-50%);
+}
+.progress-fill {
+  position: relative;
+  height: 1px;
+  background: var(--fg);
+  width: 0%;
+  transition: height var(--transition-med);
+  z-index: 1;
+}
+.progress-track:hover .progress-fill,
+.progress-track:focus-visible .progress-fill {
+  height: 2px;
+}
+.progress-fill::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fg);
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity var(--transition-med);
+}
+.progress-track:hover .progress-fill::after,
+.progress-track:focus-visible .progress-fill::after {
+  opacity: 1;
+}
+
+.ctrl-btn {
+  color: var(--fg);
+  opacity: 0.65;
+  transition: opacity var(--transition-med), transform var(--transition-med);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ctrl-btn:hover { opacity: 1; transform: translateY(-1px); }
+.ctrl-btn[aria-pressed="true"] { opacity: 1; color: var(--fg); }
+.ctrl-btn-primary {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  opacity: 1;
+}
+.ctrl-btn-primary:hover {
+  border-color: rgba(243, 241, 235, 0.5);
+  transform: none;
+}
+
+.ctrl-btn-sm {
+  color: var(--muted);
+  opacity: 0.7;
+  transition: opacity var(--transition-med);
+}
+.ctrl-btn-sm:hover { opacity: 1; }
+
+.volume-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 70px;
+  height: 1px;
+  background: var(--line);
+  outline: none;
+}
+.volume-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fg);
+  cursor: pointer;
+}
+.volume-range::-moz-range-thumb {
+  width: 7px;
+  height: 7px;
+  border: none;
+  border-radius: 50%;
+  background: var(--fg);
+  cursor: pointer;
+}
+
+/* ===========================================================
+   Overlays: album browser + track list
+=========================================================== */
+.overlay-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(8, 8, 8, 0.92);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity var(--transition-med), transform var(--transition-med);
+  overflow-y: auto;
+}
+.overlay-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.overlay-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 5rem 1.5rem 3rem;
+}
+@media (min-width: 768px) {
+  .overlay-inner { padding: 6rem 2rem 4rem; }
+}
+
+.track-list {
+  display: flex;
+  flex-direction: column;
+}
+.track-item {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.9rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: padding-left var(--transition-med), color var(--transition-med);
+  color: var(--muted);
+}
+.track-item:hover { padding-left: 0.6rem; color: var(--fg); }
+.track-item.active-track { color: var(--fg); }
+.track-num {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  width: 2.2rem;
+  flex-shrink: 0;
+  tabular-nums: 1;
+  font-variant-numeric: tabular-nums;
+}
+.track-indicator {
+  width: 6px;
+  flex-shrink: 0;
+  text-align: center;
+  opacity: 0;
+}
+.track-item.active-track .track-indicator { opacity: 1; }
+.track-name {
+  font-family: "Fraunces", serif;
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-style: italic;
+}
+
+/* ===========================================================
+   Ambient click catcher (for autoplay unlock, invisible)
+=========================================================== */
+.ambient-click-catcher {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ===========================================================
+   Reduced motion
+=========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .grain { display: none; }
+}
+
+/* ===========================================================
+   Mobile refinements
+=========================================================== */
+@media (max-width: 767px) {
+  .overlay-inner { padding-top: 4.5rem; }
+  .cursor-glow { display: none; }
+}
