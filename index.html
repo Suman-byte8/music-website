@@ -140,6 +140,14 @@
           aria-label="View controls"
         >
           <button
+            id="fullscreenBtn"
+            class="micro-btn"
+            aria-label="Toggle full screen"
+            aria-pressed="false"
+          >
+            <span id="fullscreenLabel">Full Screen</span>
+          </button>
+          <button
             id="menuToggle"
             class="micro-btn"
             aria-label="Open audio menu"
@@ -443,13 +451,15 @@
 
           <div>
             <p class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mb-4">
-              Shortcuts
+              Shortcuts &amp; Controls
             </p>
             <ul class="text-[11px] text-fg/40 leading-8 tracking-wide">
               <li>Space — play / pause</li>
               <li>← / → — previous / next track</li>
               <li>M — mute</li>
+              <li>F — toggle full screen</li>
               <li>A — album browser</li>
+              <li>Esc — exit full screen / close menu</li>
             </ul>
           </div>
         </div>

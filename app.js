@@ -141,6 +141,9 @@ const el = {
 
   playlistBtns: document.querySelectorAll("[data-playlist]"),
 
+  fullscreenBtn: document.getElementById("fullscreenBtn"),
+  fullscreenLabel: document.getElementById("fullscreenLabel"),
+
   menuToggle: document.getElementById("menuToggle"),
   menuOverlay: document.getElementById("menuOverlay"),
   trackListOverlay: document.getElementById("trackListOverlay"),
@@ -457,7 +460,18 @@ function updateMeta() {
 
   document.title = `${track.title} — The Local Train`;
 
-  el.playlistBtns.forEach((btn) => {
+if (el.fullscreenBtn) {
+  el.fullscreenBtn.addEventListener("click", toggleFullscreen);
+}
+
+[
+  "fullscreenchange",
+  "webkitfullscreenchange",
+  "mozfullscreenchange",
+  "MSFullscreenChange",
+].forEach((evt) => document.addEventListener(evt, updateFullscreenUI));
+
+el.playlistBtns.forEach((btn) => {
     btn.classList.toggle(
       "active-playlist",
       btn.dataset.playlist === state.playlistId,
@@ -537,6 +551,53 @@ function overlaysOpen() {
     el.menuOverlay.classList.contains("open") ||
     el.trackListOverlay.classList.contains("open")
   );
+}
+
+/* -----------------------------------------------------------
+   FULLSCREEN ENGINE
+----------------------------------------------------------- */
+function isFullscreen() {
+  return !!(
+    document.fullscreenElement ||
+    document.webkitFullscreenElement ||
+    document.mozFullScreenElement ||
+    document.msFullscreenElement
+  );
+}
+
+function toggleFullscreen() {
+  if (!isFullscreen()) {
+    const docEl = document.documentElement;
+    if (docEl.requestFullscreen) {
+      docEl.requestFullscreen().catch(() => {});
+    } else if (docEl.webkitRequestFullscreen) {
+      docEl.webkitRequestFullscreen();
+    } else if (docEl.mozRequestFullScreen) {
+      docEl.mozRequestFullScreen();
+    } else if (docEl.msRequestFullscreen) {
+      docEl.msRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+}
+
+function updateFullscreenUI() {
+  const active = isFullscreen();
+  if (el.fullscreenBtn) {
+    el.fullscreenBtn.setAttribute("aria-pressed", String(active));
+  }
+  if (el.fullscreenLabel) {
+    el.fullscreenLabel.textContent = active ? "Exit Fullscreen" : "Full Screen";
+  }
 }
 
 /* -----------------------------------------------------------
@@ -682,6 +743,10 @@ document.addEventListener("keydown", (e) => {
     case "m":
     case "M":
       toggleMute();
+      break;
+    case "f":
+    case "F":
+      toggleFullscreen();
       break;
     case "a":
     case "A":
