@@ -1,204 +1,465 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>The Local Train — Interactive Music Archive</title>
-<meta name="description" content="An immersive digital archive of The Local Train — full-screen atmospheric listening and a minimal cinematic player." />
-<meta name="theme-color" content="#080808" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>The Local Train — Interactive Music Archive</title>
+    <meta
+      name="description"
+      content="An immersive digital archive of The Local Train — full-screen atmospheric listening and a minimal cinematic player."
+    />
+    <meta name="theme-color" content="#080808" />
 
-<meta property="og:title" content="The Local Train — Interactive Music Archive" />
-<meta property="og:description" content="A cinematic, minimal listening room for The Local Train — atmosphere and sound." />
-<meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="The Local Train — Interactive Music Archive"
+    />
+    <meta
+      property="og:description"
+      content="A cinematic, minimal listening room for The Local Train — atmosphere and sound."
+    />
+    <meta property="og:type" content="website" />
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="./assets/favicon.png" type="image/x-icon" />
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          bg: '#080808',
-          fg: '#f3f1eb',
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg: "#080808",
+              fg: "#f3f1eb",
+            },
+            fontFamily: {
+              display: ['"Fraunces"', "serif"],
+              sans: ['"DM Sans"', "sans-serif"],
+            },
+          },
         },
-        fontFamily: {
-          display: ['"Fraunces"', 'serif'],
-          sans: ['"DM Sans"', 'sans-serif'],
-        },
-      },
-    },
-  };
-</script>
+      };
+    </script>
 
-<link rel="stylesheet" href="styles.css" />
-</head>
-<body class="bg-bg text-fg font-sans overflow-hidden h-screen w-screen selection:bg-fg selection:text-bg">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body
+    class="bg-bg text-fg font-sans overflow-hidden h-screen w-screen selection:bg-fg selection:text-bg"
+  >
+    <!-- ============ LOADING SCREEN ============ -->
+    <div
+      id="loadingScreen"
+      class="fixed inset-0 z-[100] bg-bg flex flex-col items-center justify-center gap-6"
+      aria-live="polite"
+    >
+      <p
+        class="font-display italic text-2xl md:text-3xl tracking-wide text-fg/90"
+      >
+        The Local Train
+      </p>
+      <div class="loading-bar" aria-hidden="true"><span></span></div>
+      <p class="text-[10px] tracking-[0.3em] uppercase text-fg/40">Tuning in</p>
+    </div>
 
-  <!-- ============ LOADING SCREEN ============ -->
-  <div id="loadingScreen" class="fixed inset-0 z-[100] bg-bg flex flex-col items-center justify-center gap-6" aria-live="polite">
-    <p class="font-display italic text-2xl md:text-3xl tracking-wide text-fg/90">The Local Train</p>
-    <div class="loading-bar" aria-hidden="true"><span></span></div>
-    <p class="text-[10px] tracking-[0.3em] uppercase text-fg/40">Tuning in</p>
-  </div>
+    <!-- ============ BACKGROUND VIDEO LAYER ============ -->
+    <div id="videoLayer" class="fixed inset-0 z-0">
+      <video
+        id="bgVideoA"
+        class="bg-video active"
+        autoplay
+        muted
+        loop
+        playsinline
+        aria-hidden="true"
+      ></video>
+      <video
+        id="bgVideoB"
+        class="bg-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        aria-hidden="true"
+      ></video>
+      <div class="video-overlay"></div>
+      <div class="grain" aria-hidden="true"></div>
+      <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
+    </div>
 
-  <!-- ============ BACKGROUND VIDEO LAYER ============ -->
-  <div id="videoLayer" class="fixed inset-0 z-0">
-    <video id="bgVideoA" class="bg-video active" autoplay muted loop playsinline aria-hidden="true"></video>
-    <video id="bgVideoB" class="bg-video" autoplay muted loop playsinline aria-hidden="true"></video>
-    <div class="video-overlay"></div>
-    <div class="grain" aria-hidden="true"></div>
-    <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
-  </div>
+    <!-- ============ AUDIO UNAVAILABLE TOAST ============ -->
+    <div
+      id="audioUnavailable"
+      class="fixed left-1/2 -translate-x-1/2 top-6 z-50 hidden"
+    >
+      <p
+        class="text-[10px] tracking-[0.25em] uppercase bg-bg/80 backdrop-blur px-4 py-2 border border-fg/20 text-fg/70"
+      >
+        Audio unavailable
+      </p>
+    </div>
 
-  <!-- ============ AUDIO UNAVAILABLE TOAST ============ -->
-  <div id="audioUnavailable" class="fixed left-1/2 -translate-x-1/2 top-6 z-50 hidden">
-    <p class="text-[10px] tracking-[0.25em] uppercase bg-bg/80 backdrop-blur px-4 py-2 border border-fg/20 text-fg/70">Audio unavailable</p>
-  </div>
-
-  <!-- ============ MAIN APP ============ -->
-  <main id="app" class="relative z-10 h-screen w-screen flex flex-col justify-between px-5 md:px-10 pt-6 md:pt-8 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:pb-8 opacity-0">
-
-    <!-- TOP ROW -->
-    <header class="flex items-start justify-between">
-      <div>
-        <h1 class="font-display italic text-base md:text-lg tracking-wide text-fg">The Local Train</h1>
-        <div class="mt-2 md:mt-3">
-          <p id="albumTitle" class="text-[11px] md:text-xs tracking-[0.2em] uppercase text-fg/70">Aalas Ka Pedh</p>
-          <p id="albumYear" class="text-[10px] md:text-[11px] tracking-[0.2em] text-fg/40 mt-0.5">2015</p>
+    <!-- ============ MAIN APP ============ -->
+    <main
+      id="app"
+      class="relative z-10 h-screen w-screen flex flex-col justify-between px-5 md:px-10 pt-6 md:pt-8 pb-[calc(1.25rem+env(safe-area-inset-bottom))] md:pb-8 opacity-0"
+    >
+      <!-- TOP ROW -->
+      <header class="flex items-start justify-between">
+        <div>
+          <h1
+            class="font-display italic text-base md:text-lg tracking-wide text-fg"
+          >
+            The Local Train
+          </h1>
+          <div class="mt-2 md:mt-3">
+            <p
+              id="albumTitle"
+              class="text-[11px] md:text-xs tracking-[0.2em] uppercase text-fg/70"
+            >
+              Aalas Ka Pedh
+            </p>
+            <p
+              id="albumYear"
+              class="text-[10px] md:text-[11px] tracking-[0.2em] text-fg/40 mt-0.5"
+            >
+              2015
+            </p>
+          </div>
         </div>
-      </div>
 
-      <nav class="flex items-center gap-4 md:gap-6" aria-label="View controls">
-        <button id="menuToggle" class="micro-btn" aria-label="Open audio menu" aria-expanded="false">
-          <span class="hidden md:inline">Audio</span>
-          <span class="md:hidden">Menu</span>
+        <nav
+          class="flex items-center gap-4 md:gap-6"
+          aria-label="View controls"
+        >
+          <button
+            id="menuToggle"
+            class="micro-btn"
+            aria-label="Open audio menu"
+            aria-expanded="false"
+          >
+            <span class="hidden md:inline">Audio</span>
+            <span class="md:hidden">Menu</span>
+          </button>
+        </nav>
+      </header>
+
+      <!-- CENTER: TRACK TITLE -->
+      <section
+        class="flex-1 flex flex-col items-center justify-center text-center px-2 md:px-0 md:max-w-[68%] mx-auto w-full"
+        aria-live="polite"
+      >
+        <p
+          id="currentTrackTitle"
+          class="font-display italic text-3xl md:text-5xl lg:text-6xl text-fg tracking-wide cursor-pointer hover:opacity-80 transition-opacity"
+        >
+          Manzil
+        </p>
+      </section>
+
+      <!-- BOTTOM ROW -->
+      <footer
+        class="flex flex-col md:flex-row items-center md:items-end justify-between gap-5 md:gap-0"
+      >
+        <!-- BOTTOM LEFT: playlist nav -->
+        <div
+          class="hidden md:flex flex-col gap-2"
+          aria-label="Playlist navigation"
+        >
+          <button class="playlist-nav-btn" data-playlist="aalaskapedh">
+            Aalas Ka Pedh
+          </button>
+          <button class="playlist-nav-btn" data-playlist="vaaqif">
+            Vaaqif
+          </button>
+        </div>
+
+        <!-- BOTTOM CENTER: player controls -->
+        <div class="flex flex-col items-center gap-3 w-full md:w-auto max-w-md">
+          <div
+            id="progressBar"
+            class="progress-track"
+            role="slider"
+            aria-label="Seek"
+            tabindex="0"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+
+          <div class="flex items-center gap-5 md:gap-6">
+            <button
+              id="shuffleBtn"
+              class="ctrl-btn"
+              aria-pressed="false"
+              aria-label="Toggle shuffle"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+              >
+                <path d="M16 3h5v5" />
+                <path d="M4 20L21 3" />
+                <path d="M21 16v5h-5" />
+                <path d="M15 15l6 6" />
+                <path d="M4 4l5 5" />
+              </svg>
+            </button>
+            <button id="prevBtn" class="ctrl-btn" aria-label="Previous track">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M6 6h2v12H6zM10 12l9-6v12z" />
+              </svg>
+            </button>
+            <button
+              id="playPauseBtn"
+              class="ctrl-btn ctrl-btn-primary"
+              aria-label="Play"
+            >
+              <svg
+                id="playIcon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              <svg
+                id="pauseIcon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="hidden"
+              >
+                <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
+              </svg>
+            </button>
+            <button id="nextBtn" class="ctrl-btn" aria-label="Next track">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M16 6h2v12h-2zM5 6l9 6-9 6z" />
+              </svg>
+            </button>
+            <button
+              id="repeatBtn"
+              class="ctrl-btn"
+              aria-pressed="false"
+              aria-label="Toggle repeat"
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+              >
+                <path d="M17 1l4 4-4 4" />
+                <path d="M3 11V9a4 4 0 014-4h14" />
+                <path d="M7 23l-4-4 4-4" />
+                <path d="M21 13v2a4 4 0 01-4 4H3" />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            class="flex items-center gap-3 text-[10px] tracking-widest text-fg/40 tabular-nums"
+          >
+            <span id="currentTime">0:00</span>
+            <div class="hidden md:flex items-center gap-2">
+              <button
+                id="muteBtn"
+                class="ctrl-btn-sm"
+                aria-label="Mute"
+                aria-pressed="false"
+              >
+                <svg
+                  id="volIcon"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M5 9v6h4l5 5V4L9 9H5z" />
+                </svg>
+                <svg
+                  id="muteIcon"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  class="hidden"
+                >
+                  <path
+                    d="M5 9v6h4l5 5V4L9 9H5z"
+                    fill="currentColor"
+                    stroke="none"
+                  />
+                  <path d="M17 9l6 6M23 9l-6 6" />
+                </svg>
+              </button>
+              <input
+                id="volumeSlider"
+                type="range"
+                min="0"
+                max="100"
+                value="80"
+                class="volume-range"
+                aria-label="Volume"
+              />
+            </div>
+            <span id="duration">0:00</span>
+          </div>
+        </div>
+
+        <!-- BOTTOM RIGHT: track info -->
+        <div
+          class="hidden md:flex flex-col items-end text-right"
+          aria-live="polite"
+        >
+          <p
+            id="trackIndex"
+            class="text-[10px] tracking-[0.25em] text-fg/40 tabular-nums"
+          >
+            01 / 09
+          </p>
+          <p
+            id="trackStatus"
+            class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mt-0.5"
+          >
+            Paused
+          </p>
+        </div>
+      </footer>
+
+      <!-- mobile playlist nav -->
+      <div
+        class="flex md:hidden items-center justify-center gap-6 -mt-1"
+        aria-label="Playlist navigation"
+      >
+        <button
+          class="playlist-nav-btn text-[10px]"
+          data-playlist="aalaskapedh"
+        >
+          Aalas Ka Pedh
         </button>
-      </nav>
-    </header>
-
-    <!-- CENTER: TRACK TITLE -->
-    <section class="flex-1 flex flex-col items-center justify-center text-center px-2 md:px-0 md:max-w-[68%] mx-auto w-full" aria-live="polite">
-      <p id="currentTrackTitle" class="font-display italic text-3xl md:text-5xl lg:text-6xl text-fg tracking-wide cursor-pointer hover:opacity-80 transition-opacity">Manzil</p>
-    </section>
-
-    <!-- BOTTOM ROW -->
-    <footer class="flex flex-col md:flex-row items-center md:items-end justify-between gap-5 md:gap-0">
-
-      <!-- BOTTOM LEFT: playlist nav -->
-      <div class="hidden md:flex flex-col gap-2" aria-label="Playlist navigation">
-        <button class="playlist-nav-btn" data-playlist="aalaskapedh">Aalas Ka Pedh</button>
-        <button class="playlist-nav-btn" data-playlist="vaaqif">Vaaqif</button>
+        <button class="playlist-nav-btn text-[10px]" data-playlist="vaaqif">
+          Vaaqif
+        </button>
       </div>
+    </main>
 
-      <!-- BOTTOM CENTER: player controls -->
-      <div class="flex flex-col items-center gap-3 w-full md:w-auto max-w-md">
-        <div id="progressBar" class="progress-track" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div id="progressFill" class="progress-fill"></div>
-        </div>
-
-        <div class="flex items-center gap-5 md:gap-6">
-          <button id="shuffleBtn" class="ctrl-btn" aria-pressed="false" aria-label="Toggle shuffle">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
-          </button>
-          <button id="prevBtn" class="ctrl-btn" aria-label="Previous track">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM10 12l9-6v12z"/></svg>
-          </button>
-          <button id="playPauseBtn" class="ctrl-btn ctrl-btn-primary" aria-label="Play">
-            <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="pauseIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
-          </button>
-          <button id="nextBtn" class="ctrl-btn" aria-label="Next track">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM5 6l9 6-9 6z"/></svg>
-          </button>
-          <button id="repeatBtn" class="ctrl-btn" aria-pressed="false" aria-label="Toggle repeat">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
-          </button>
-        </div>
-
-        <div class="flex items-center gap-3 text-[10px] tracking-widest text-fg/40 tabular-nums">
-          <span id="currentTime">0:00</span>
-          <div class="hidden md:flex items-center gap-2">
-            <button id="muteBtn" class="ctrl-btn-sm" aria-label="Mute" aria-pressed="false">
-              <svg id="volIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9v6h4l5 5V4L9 9H5z"/></svg>
-              <svg id="muteIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="hidden"><path d="M5 9v6h4l5 5V4L9 9H5z" fill="currentColor" stroke="none"/><path d="M17 9l6 6M23 9l-6 6"/></svg>
-            </button>
-            <input id="volumeSlider" type="range" min="0" max="100" value="80" class="volume-range" aria-label="Volume" />
+    <!-- ============ TRACK LIST OVERLAY ============ -->
+    <div id="trackListOverlay" class="overlay-panel" aria-hidden="true">
+      <div class="overlay-inner">
+        <div class="flex items-center justify-between mb-8 md:mb-10">
+          <div>
+            <p
+              id="overlayAlbumTitle"
+              class="font-display italic text-2xl md:text-4xl"
+            >
+              Aalas Ka Pedh
+            </p>
+            <p
+              id="overlayAlbumYear"
+              class="text-[11px] tracking-[0.25em] text-fg/40 mt-1"
+            >
+              2015
+            </p>
           </div>
-          <span id="duration">0:00</span>
+          <button
+            class="micro-btn"
+            data-close-overlay
+            aria-label="Close track list"
+          >
+            Close
+          </button>
         </div>
+        <ul id="trackList" class="track-list" role="list"></ul>
       </div>
-
-      <!-- BOTTOM RIGHT: track info -->
-      <div class="hidden md:flex flex-col items-end text-right" aria-live="polite">
-        <p id="trackIndex" class="text-[10px] tracking-[0.25em] text-fg/40 tabular-nums">01 / 09</p>
-        <p id="trackStatus" class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mt-0.5">Paused</p>
-      </div>
-    </footer>
-
-    <!-- mobile playlist nav -->
-      <div class="flex md:hidden items-center justify-center gap-6 -mt-1" aria-label="Playlist navigation">
-        <button class="playlist-nav-btn text-[10px]" data-playlist="aalaskapedh">Aalas Ka Pedh</button>
-        <button class="playlist-nav-btn text-[10px]" data-playlist="vaaqif">Vaaqif</button>
-      </div>
-  </main>
-
-  <!-- ============ TRACK LIST OVERLAY ============ -->
-  <div id="trackListOverlay" class="overlay-panel" aria-hidden="true">
-    <div class="overlay-inner">
-      <div class="flex items-center justify-between mb-8 md:mb-10">
-        <div>
-          <p id="overlayAlbumTitle" class="font-display italic text-2xl md:text-4xl">Aalas Ka Pedh</p>
-          <p id="overlayAlbumYear" class="text-[11px] tracking-[0.25em] text-fg/40 mt-1">2015</p>
-        </div>
-        <button class="micro-btn" data-close-overlay aria-label="Close track list">Close</button>
-      </div>
-      <ul id="trackList" class="track-list" role="list"></ul>
     </div>
-  </div>
 
-  <!-- ============ ALBUM BROWSER / MENU OVERLAY ============ -->
-  <div id="menuOverlay" class="overlay-panel" aria-hidden="true">
-    <div class="overlay-inner">
-      <div class="flex items-center justify-between mb-8 md:mb-10">
-        <p class="text-[11px] tracking-[0.25em] uppercase text-fg/50">Audio</p>
-        <button class="micro-btn" data-close-overlay aria-label="Close menu">Close</button>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-10 md:gap-16">
-        <div>
-          <p class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mb-4">Playlists</p>
-          <div class="flex flex-col gap-3">
-            <button class="menu-list-btn" data-playlist="aalaskapedh">
-              <span class="font-display italic text-xl md:text-2xl">Aalas Ka Pedh</span>
-              <span class="text-[10px] tracking-[0.2em] text-fg/40">2015</span>
-            </button>
-            <button class="menu-list-btn" data-playlist="vaaqif">
-              <span class="font-display italic text-xl md:text-2xl">Vaaqif</span>
-              <span class="text-[10px] tracking-[0.2em] text-fg/40">2018</span>
-            </button>
-          </div>
+    <!-- ============ ALBUM BROWSER / MENU OVERLAY ============ -->
+    <div id="menuOverlay" class="overlay-panel" aria-hidden="true">
+      <div class="overlay-inner">
+        <div class="flex items-center justify-between mb-8 md:mb-10">
+          <p class="text-[11px] tracking-[0.25em] uppercase text-fg/50">
+            Audio
+          </p>
+          <button class="micro-btn" data-close-overlay aria-label="Close menu">
+            Close
+          </button>
         </div>
 
-        <div>
-          <p class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mb-4">Shortcuts</p>
-          <ul class="text-[11px] text-fg/40 leading-8 tracking-wide">
-            <li>Space — play / pause</li>
-            <li>← / → — previous / next track</li>
-            <li>M — mute</li>
-            <li>A — album browser</li>
-          </ul>
+        <div class="grid md:grid-cols-2 gap-10 md:gap-16">
+          <div>
+            <p class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mb-4">
+              Playlists
+            </p>
+            <div class="flex flex-col gap-3">
+              <button class="menu-list-btn" data-playlist="aalaskapedh">
+                <span class="font-display italic text-xl md:text-2xl"
+                  >Aalas Ka Pedh</span
+                >
+                <span class="text-[10px] tracking-[0.2em] text-fg/40"
+                  >2015</span
+                >
+              </button>
+              <button class="menu-list-btn" data-playlist="vaaqif">
+                <span class="font-display italic text-xl md:text-2xl"
+                  >Vaaqif</span
+                >
+                <span class="text-[10px] tracking-[0.2em] text-fg/40"
+                  >2018</span
+                >
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-[10px] tracking-[0.25em] uppercase text-fg/40 mb-4">
+              Shortcuts
+            </p>
+            <ul class="text-[11px] text-fg/40 leading-8 tracking-wide">
+              <li>Space — play / pause</li>
+              <li>← / → — previous / next track</li>
+              <li>M — mute</li>
+              <li>A — album browser</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div id="ambientClick" class="ambient-click-catcher"></div>
+    <div id="ambientClick" class="ambient-click-catcher"></div>
 
-  <audio id="audioPlayer" preload="metadata"></audio>
+    <audio id="audioPlayer" preload="metadata"></audio>
 
-  <script src="app.js"></script>
-</body>
+    <script src="app.js"></script>
+  </body>
 </html>
