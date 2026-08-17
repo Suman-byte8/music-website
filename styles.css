@@ -388,4 +388,80 @@ body {
 @media (max-width: 767px) {
   .overlay-inner { padding-top: 4.5rem; }
   .cursor-glow { display: none; }
+
+  /* Main app container - more breathing room on mobile */
+  #app {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    padding-top: 1.5rem;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* Header - more vertical space */
+  header {
+    padding-bottom: 0.75rem;
+  }
+
+  /* Track title - more room to breathe */
+  #currentTrackTitle {
+    font-size: 2.5rem;
+    line-height: 1.15;
+    padding: 0 0.5rem;
+  }
+
+  /* Footer / player controls - more spacing */
+  footer {
+    gap: 1.25rem;
+    padding-top: 1rem;
+  }
+
+  /* Progress bar - full width with comfortable margins */
+  .progress-track {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Control buttons - larger tap targets */
+  .ctrl-btn {
+    padding: 0.5rem;
+  }
+  .ctrl-btn-primary {
+    width: 48px;
+    height: 48px;
+  }
+  .ctrl-btn-sm {
+    padding: 0.5rem;
+  }
+
+  /* Volume slider - wider on mobile */
+  .volume-range {
+    width: 90px;
+  }
+
+  /* Time display - better spacing */
+  footer > div:last-child {
+    gap: 1rem;
+  }
+
+  /* Mobile playlist nav - more spacing */
+  .flex.md\:hidden.mobile-playlist-nav {
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+  }
+  .playlist-nav-btn.text-\[10px\] {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+  }
+
+  /* Track title section - more vertical padding */
+  section[aria-live="polite"] {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  /* Ensure the player controls container has good spacing */
+  footer > div.flex-col.items-center {
+    width: 100%;
+    padding: 0 0.5rem;
+  }
 }
